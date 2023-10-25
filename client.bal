@@ -210,3 +210,36 @@ function getKPIsBySupervisor(string supervisorId) {
             }
         }
     """;
+var formattedQuery = query.format(supervisorId);
+
+    graphql:Operation getKPIsBySupervisorOperation = {
+        query: formattedQuery
+    };
+
+    var response = client->execute(getKPIsBySupervisorOperation);
+    match response {
+        graphql:Response successResponse => {
+            var kpis = successResponse.data.toArray();
+            io:println("KPIs by Supervisor:");
+            foreach var kpi in kpis {
+                io:println(kpi.toString());
+            }
+        }
+        graphql:ErrorResponse errorResponse => {
+            io:println("Error getting KPIs by Supervisor: " + errorResponse.errorMessage);
+        }
+    }
+}
+
+function gradeKPI(string kpiId, int score) {
+    var mutation = """
+        mutation {
+            gradeKPI(kpiId: "%s", score: %d)
+        }
+    """;
+
+    var formattedMutation = mutation.format(kpiId, score);
+
+    graphql:Operation gradeKPIOperation = {
+        query: formattedMutation
+    };
