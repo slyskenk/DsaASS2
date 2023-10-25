@@ -121,3 +121,92 @@ function assignSupervisor(string userId, string supervisorId) {
     }
 }
 
+function approveKPIs(string[] kpiIds) {
+    var mutation = """
+        mutation {
+            approveKPIs(kpiIds: %s)
+        }
+    """;
+
+    var formattedKpiIds = ["\"" + id + "\"" | id in kpiIds];
+    var formattedMutation = mutation.format(formattedKpiIds.toString());
+
+    graphql:Operation approveKPIsOperation = {
+        query: formattedMutation
+    };
+
+    var response = client->execute(approveKPIsOperation);
+    match response {
+        graphql:Response successResponse => {
+            io:println("KPIs approved");
+        }
+        graphql:ErrorResponse errorResponse => {
+            io:println("Error approving KPIs: " + errorResponse.errorMessage);
+        }
+    }
+}
+
+function deleteKPI(string kpiId) {
+    var mutation = """
+        mutation {
+            deleteKPI(kpiId: "%s")
+        }
+    """;
+
+    var formattedMutation = mutation.format(kpiId);
+
+    graphql:Operation deleteKPIOperation = {
+        query: formattedMutation
+    };
+
+    var response = client->execute(deleteKPIOperation);
+    match response {
+        graphql:Response successResponse => {
+            io:println("KPI deleted");
+        }
+        graphql:ErrorResponse errorResponse => {
+            io:println("Error deleting KPI: " + errorResponse.errorMessage);
+        }
+    }
+}
+
+function updateKPI() {
+    var mutation = """
+        mutation {
+            updateKPI(kpi: {
+                id: "1",
+                name: "Updated KPI",
+                target: 100,
+                score: 75,
+                userId: "1"
+            })
+        }
+    """;
+
+    graphql:Operation updateKPIOperation = {
+        query: mutation
+    };
+
+    var response = client->execute(updateKPIOperation);
+    match response {
+        graphql:Response successResponse => {
+            io:println("KPI updated");
+        }
+        graphql:ErrorResponse errorResponse => {
+            io:println("Error updating KPI: " + errorResponse.errorMessage);
+        }
+    }
+}
+
+function getKPIsBySupervisor(string supervisorId) {
+    var query = """
+        {
+            getKPIsBySupervisor(supervisorId: "%s") {
+                id
+                name
+                target
+                score
+                userId
+            }
+        }
+    """;
